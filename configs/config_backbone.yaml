@@ -1,0 +1,161 @@
+exp:
+  name: "mm_clip_vitg14_fast_robust_adv_v2_backbone"
+
+seed: 42
+
+data:
+  frames_root: "data/FaceForensics+++/c0/train/frames"
+  train_manifest: "outputs/manifests/train.jsonl"
+  val_manifest: "outputs/manifests/val.jsonl"
+  image_size: 224
+  project_root: "."
+
+model:
+  type: "clip"
+  clip_model_name: "ViT-g-14"
+  clip_pretrained_tag: null
+  clip_ckpt_path: "data/clip_ckpts/ViT-g-14-laion2b_s12b_b42k.pt"
+  clip_prompt_templates_train:
+    - "{caption}"
+    - "A photo of {caption}."
+  clip_prompt_templates_eval:
+    - "{caption}"
+    - "A photo of {caption}."
+
+novelty:
+  grad_checkpoint: true
+  forensic_token:
+    enable: true
+    hidden_mult: 2.0
+  film_refiner:
+    enable: true
+    symmetric: true
+    dropout: 0.05
+
+train:
+  batch_size: 16
+  accum_steps: 6
+  epochs: 35
+  lr: 3.0e-6
+  lr_backbone: 1.5e-6
+  lr_heads: 4.5e-6
+  weight_decay: 1.5e-4
+  patience: 12
+  num_workers: 4
+  max_grad_norm: 1.0
+  ema_decay: 0.999
+  freeze_img_epochs: 0
+  amp: "bf16"
+  ckpt_dir: "outputs/checkpoints_gvit14"
+  warmup_steps: 1200
+  flip_every: 10
+  enable_early_stop: false
+
+loss:
+  w_it: 1.0
+  w_tt: 0.15
+  w_ii: 0.15
+  img_consistency: 0.10
+  pos_align: 0.05
+  temp_target: 100.0
+  temp_reg: 5.0e-4
+  logit_scale_min: 10.0
+  logit_scale_max: 100.0
+  label_smoothing: 0.10
+  w_hn: 0.0
+  w_tri: 0.0
+  w_txt_margin: 0.25
+  txt_margin: 0.05
+  w_label_clip_xm: 0.0015
+  w_label_para_t2t: 0.03
+  w_sbi_xlbl: 0.01
+  w_label_i2i: 0.005
+  w_label_t2t_core: 0.0075
+  w_text_only: 0.01
+  text_only_T: 2.3
+  forgery_proto_w: 0.01
+  forgery_num_classes: 2
+  robust_metric_key: "val/R@1_i2t_adv"
+  robust_plateau_patience: 5
+
+robust:
+  trades_w: 0.30
+  trades_T: 1.0
+  trades_eps: 2.0e-2
+  trades_alpha: 5.0e-3
+  trades_t2t_w: 0.10
+  trades_i2i_w: 0.02
+  fap_w: 0.20
+  fap_margin: 0.10
+  awp:
+    enable: false
+    adv_lr: 5.0e-4
+    adv_eps: 5.0e-4
+  mass:
+    enable: true
+    base_T: 1.0
+    K: 3
+    alpha: 0.25
+    sigma_min: 0.04
+    sigma_max: 0.25
+    m_ref: 0.25
+    beta: 0.6
+    T_max_factor: 1.5
+    w_trades_smooth: 0.0075
+    w_consistency: 0.0035
+    w_proto: 0.00
+  align_w: 0.10
+
+adv:
+  enable: true
+  img:
+    method: "pgd"
+    norm: "linf"
+    clamp: true
+    steps: 6
+    eps: 1.6e-2
+    step_size: 4.0e-3
+    attack_frac: 0.45
+    random_start: true
+    momentum: 0.0
+    eot: false
+    attack_prob_schedule:
+      - [1, 0.55]
+      - [3, 0.75]
+      - [6, 0.95]
+    train_mixture_schedule:
+      - [1, 0.70]
+      - [6, 0.55]
+      - [12, 0.40]
+    away_frac: 0.15
+
+text:
+  enable: true
+  prob: 0.35
+  max_subs: 3
+  mismatch_prob: 0.35
+
+eval_adv:
+  gating:
+    start_epoch: 1
+    every_k_epochs: 1
+  max_val_batches: 16
+  pgd:
+    norm: "linf"
+    clamp: true
+    eps: 0.031
+    step_size: 0.0075
+    steps: 30
+    random_start: true
+    momentum: 0.9
+    eot: true
+    eot_iters: 1
+  restarts: 3
+  text:
+    enable: true
+    prob: 0.65
+    max_subs: 4
+
+wandb:
+  enable: true
+

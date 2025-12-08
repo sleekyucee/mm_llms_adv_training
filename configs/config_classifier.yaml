@@ -1,0 +1,70 @@
+exp:
+  name: "mm_clip_vitg14_fast_robust_adv_v2_classifier"
+
+seed: 42
+
+data:
+  frames_root: "data/FaceForensics+++/c0/train/frames"
+  train_manifest: "outputs/manifests/train.jsonl"
+  val_manifest: "outputs/manifests/val.jsonl"
+  image_size: 224
+  project_root: "."
+
+model:
+  type: "clip"
+  clip_model_name: "ViT-g-14"
+  clip_pretrained_tag: null
+  clip_ckpt_path: "data/clip_ckpts/ViT-g-14-laion2b_s12b_b42k.pt"
+  clip_prompt_templates_train:
+    - "{caption}"
+    - "A photo of {caption}."
+  clip_prompt_templates_eval:
+    - "{caption}"
+    - "A photo of {caption}."
+
+novelty:
+  grad_checkpoint: true
+  forensic_token:
+    enable: true
+    hidden_mult: 2.0
+  film_refiner:
+    enable: true
+    symmetric: true
+    dropout: 0.05
+
+clf:
+  out_dir: "outputs/checkpoints_mm_heads_vitg14_clean"
+  epochs: 108
+  batch_size: 64
+  num_workers: 4
+  amp: "bf16"
+  lr: 1.0e-4
+  lr_heads: 1.0e-4
+  lr_backbone: 1.0e-5
+  weight_decay: 1.0e-4
+  embed_dim: 1024
+
+clf_eval:
+  modes: ["img_only", "i2t", "t2i"]
+
+clf_adv:
+  enable: true
+  eps: 0.031
+  step_size: 0.0075
+  steps: 10
+  text_prob: 0.7
+  text_max_subs: 4
+  text_mismatch_prob: 0.4
+  max_train_batches: 5
+  max_batches: 2
+  amp: "bf16"
+  unfreeze_backbone: false
+  unfreeze_epoch: 6
+
+eval_adv:
+  eps: 0.031
+  step_size: 0.0075
+  steps: 10
+
+wandb:
+  enable: true
