@@ -1,0 +1,12 @@
+# requirements.txt
+torch
+torchvision
+timm
+transformers
+tqdm
+sentence-transformers
+Pillow
+numpy
+PyYAML
+open_clip_torch
+
