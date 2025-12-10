@@ -1,49 +1,100 @@
-Multimodal Face Forgery Detection
+# ⚠️ Online Demo Coming Soon
+The interactive Hugging Face Space for real-time inference is currently being deployed.  
+Large model weights are still uploading and will be available shortly.
 
-A robust framework for detecting manipulated facial media using Vision-Language Models (VLM) with adversarial training.
+---
 
-Overview
+# Multimodal Face Forgery Detection
 
-This project leverages CLIP ViT-g-14 (LAION-2B) to build a forgery-aware multimodal backbone, enhanced with novel components for improved detection robustness. Features adversarially trained contrastive backbone resistant to image and text perturbations, lightweight classifier heads for multimodal inference, novelty modules including ForensicToken (edge-aware features) and FiLMRefiner (cross-modal conditioning), and hard negative mining with SBI augmentation for invariant feature learning.
+A robust multimodal framework for detecting manipulated facial media using adversarially trained vision–language models, prototype-based detection, and hybrid inference.
 
-Architecture
+## Overview
 
-Phase 1: Contrastive Backbone Training
-- Adversarial training with PGD attacks on images + text perturbations
-- Prompt ensemble for robust text encoding
-- Style adaptation for source/length conditioning
-- Forensic analysis via Sobel-based high-pass features
+This repository implements a forgery-aware multimodal detection system built on CLIP ViT-g-14 (LAION-2B).  
+The framework jointly models facial imagery and textual descriptions to detect semantic and forensic inconsistencies under both clean and adversarial conditions.
 
-Phase 2: Classifier Training  
-- Frozen backbone with three specialized heads:
-  - img_only: Image-only detection
-  - i2t: Image-to-text pair analysis
-  - t2i: Text-to-image pair analysis
-- Optional adversarial training for enhanced robustness
+The system includes:
 
-Key Features
+- An adversarially trained multimodal contrastive backbone  
+- Lightweight classifier heads for supervised detection  
+- Prototype-based detectors for adversarial robustness  
+- A hybrid fusion strategy combining classifier and prototype decisions  
 
-- Multimodal Robustness: Joint image-text understanding resistant to attacks
-- Novel Components: ForensicToken (fixed Sobel filters + MLP for manipulation artifacts) and FiLMRefiner (cross-modal feature refinement)
-- Data Augmentation: SBI blending + hard negative sampling
-- Efficient Inference: Lightweight heads on frozen backbone
+The implementation supports research-grade evaluation and real-time deployment via Hugging Face Spaces.
 
-Usage
+---
 
-1. Backbone Training:
+## Architecture
+
+### **Phase 1 — Multimodal Contrastive Backbone**
+- CLIP ViT-g-14 image–text encoder  
+- PGD-based adversarial training on images  
+- Prompt ensemble for robust text encoding  
+- Style conditioning for manipulation source and caption length  
+- **ForensicToken**: Sobel-based high-pass forensic cues  
+- **FiLMRefiner**: Cross-modal feature modulation  
+
+This stage outputs an adversarially robust frozen backbone.
+
+### **Phase 2 — Multimodal Classifier Heads**
+Three supervised heads fine-tuned on the frozen backbone:
+
+- **img_only** — image-only forgery detection  
+- **i2t** — image → text semantic consistency  
+- **t2i** — text → image semantic consistency  
+
+Optional adversarial fine-tuning is supported.
+
+---
+
+## Prototype-Based Detection
+
+Forgery prototypes are computed in:
+
+- **Image embedding space**  
+- **Pair embedding space**: `[img, txt, |img−txt|, img·txt]`  
+
+These enable nearest-prototype detectors for both manipulation and mismatch detection.
+
+---
+
+## Hybrid Detection
+
+- **Clean regime:** adaptive combination of classifier + prototype  
+- **Adversarial regime:** prototype-only decision  
+- Eliminates classifier flipping under attack  
+
+---
+
+## Repository Structure
+
+### Training & Evaluation
+- `train_contrastive.py` – backbone training  
+- `train_classifier.py` – supervised head training  
+- `compute_mm_prototypes.py` – prototype construction  
+- `proto_classifier.py` – hybrid detector evaluation  
+- `evaluate_backbone_proto.py` – backbone retrieval tests  
+- `evaluate_classifier.py` – classifier evaluation  
+
+### Core Modules
+- `model_mm.py` – multimodal architecture  
+- `dataset_mm.py` – dataset loader  
+- `losses_mm.py` – training objectives  
+- `utils_mm.py` – utilities  
+- `logger.py` – logging  
+
+### Deployment
+- `inference_mm.py` – lightweight inference backend  
+- `app.py` – Gradio interface for Hugging Face Space  
+
+### Configuration
+- `configs/config.yaml`  
+
+---
+
+## Training Pipeline
+
+### 1. Backbone Training
+```bash
 python train_contrastive.py --config configs/backbone.yaml
 
-2. Classifier Training:
-python train_classifier.py --config configs/classifier.yaml --init_from <backbone_ckpt>
-
-Requirements
-
-- PyTorch + CUDA
-- OpenCLIP
-- TIMM
-- SentenceTransformers
-- Weights & Biases (optional)
-
-Results
-
-Trained on FF++ dataset with cross-manipulation evaluation. Achieves state-of-the-art robustness against adversarial attacks while maintaining high detection accuracy across multiple forgery types.
