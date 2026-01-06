@@ -1,6 +1,6 @@
-# ⚠️ Online Demo Coming Soon
-The interactive Hugging Face Space for real-time inference is currently being deployed.  
-Large model weights are still uploading and will be available shortly.
+# ✅ Online Demo Available
+The interactive Hugging Face Space is live:
+https://sleekyucee-hybrid-deepfake-detector.hf.space/
 
 ---
 
@@ -81,11 +81,7 @@ These enable nearest-prototype detectors for both manipulation and mismatch dete
 - `dataset_mm.py` – dataset loader  
 - `losses_mm.py` – training objectives  
 - `utils_mm.py` – utilities  
-- `logger.py` – logging  
-
-### Deployment
-- `inference_mm.py` – lightweight inference backend  
-- `app.py` – Gradio interface for Hugging Face Space  
+- `logger.py` – logging    
 
 ### Configuration
 - `configs/config.yaml`  
