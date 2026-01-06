@@ -1,6 +1,6 @@
-# ⚠️ Online Demo Coming Soon
-The interactive Hugging Face Space for real-time inference is currently being deployed.  
-Large model weights are still uploading and will be available shortly.
+# ✅ Online Demo Available
+The interactive Hugging Face Space is live:
+https://sleekyucee-hybrid-deepfake-detector.hf.space/
 
 ---
 
